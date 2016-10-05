@@ -30,7 +30,7 @@ inputArea model =
         , Textfield.floatingLabel
         , Textfield.value model.inputText
         , Textfield.rows 32
-        , Textfield.cols 140
+        , Textfield.cols 80
         , Textfield.textarea
         , Textfield.onInput Change ]
 
