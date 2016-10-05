@@ -5,23 +5,34 @@ import Html.App as App
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
 import Markdown exposing (..)
+import Material
+import Material.Scheme
+import Material.Options exposing (css)
+import Material.Textfield as Textfield
 
 
 type alias Model =
     { inputText : String
+    , mdl : Material.Model
     }
 
 
 type Msg
     = NoOp
     | Change String
+    | Mdl (Material.Msg Msg)
 
 
-inputArea : Html Msg
-inputArea =
-    div []
-        [ textarea [ placeholder "Text to parse to markdown", onInput Change, rows 8, cols 80 ] []
-        ]
+inputArea : Model -> Html Msg
+inputArea model =
+    Textfield.render Mdl [0] model.mdl
+        [ Textfield.label "Documentation"
+        , Textfield.floatingLabel
+        , Textfield.value model.inputText
+        , Textfield.rows 32
+        , Textfield.cols 140
+        , Textfield.textarea
+        , Textfield.onInput Change ]
 
 
 previewArea : Model -> Html Msg
@@ -38,9 +49,10 @@ previewArea model =
 view : Model -> Html Msg
 view model =
     div [ class "container" ]
-        [ inputArea
+        [ inputArea model
         , previewArea model
         ]
+        |> Material.Scheme.top
 
 
 markdownOptions : Options
@@ -60,19 +72,27 @@ toMarkdown userInput =
 model : Model
 model =
     { inputText = ""
+    , mdl = Material.model
     }
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         NoOp ->
-            model
+            model ! []
 
         Change newContent ->
-            { model | inputText = newContent }
+            { model | inputText = newContent } ! []
+
+        Mdl msg' ->
+            Material.update msg' model
 
 
 main : Program Never
 main =
-    App.beginnerProgram { model = model, view = view, update = update }
+    App.program { init = ( model, Cmd.none ), view = view, update = update, subscriptions = always Sub.none }
+
+
+type alias Mdl =
+    Material.Model
